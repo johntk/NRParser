@@ -3,77 +3,98 @@ package com.ibm.nrpreprocessor;
 /**
  * Created by Cloud on 20/11/2015.
  */
+
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.jms.*;
 import javax.naming.*;
 
 public class Consumer implements MessageListener {
 
+    private static final Logger log = Logger.getLogger(Consumer.class.getName());
+    private static final String DEFAULT_CONNECTION_FACTORY = "jms/RemoteConnectionFactory";
+    private static final String DEFAULT_DESTINATION = "java:/jms/queue/demoQueue";
     private static final String DEFAULT_USERNAME = "jmsuser";
     private static final String DEFAULT_PASSWORD = "babog2001";
-    private static final String DEFAULT_CONNECTION_FACTORY = "jms/RemoteConnectionFactory";
     private static final String INITIAL_CONTEXT_FACTORY = "org.jboss.naming.remote.client.InitialContextFactory";
-    private static final String DEFAULT_DESTINATION = "java:/jms/queue/demoQueue";
-    private static final String PROVIDER_URL = "http-remoting://192.168.1.6:8080";
+    private static final String PROVIDER_URL = "http-remoting://johnkiernan.ie:80";
+    private Connection connection = null;
+    private Context context = null;
     private Queue remoteQueue;
-    private Connection remoteQueueConnection;
     private Session remoteQueueSession;
 
-    public static void main(String agrs[]) throws NamingException, JMSException {
+    public static void main(String agrs[]) throws Throwable {
         Consumer remoteQInteractor = new Consumer();
-        System.out.println(remoteQInteractor.receiveTextMessage());
+        for (int i = 0; i < 200; i++) {
+            remoteQInteractor.onMessage(remoteQInteractor.receiveTextMessage());
+        }
+        remoteQInteractor.finalize();
     }
 
 
-    public Consumer() throws NamingException, JMSException {
-        Properties props = new Properties();
-        props.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT_FACTORY);
+    public Consumer() throws Throwable {
 
-        /**
-         * The URL below should point to the your instance of Server 1, if no
-         * port offset is used for Server 1 the port can remain at 4447
-         */
-        props.put(Context.PROVIDER_URL, PROVIDER_URL);
+        try {
+            /**
+             *Set up the context for the JNDI
+             */
+            final Properties props = new Properties();
+            props.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT_FACTORY);
+            props.put(Context.PROVIDER_URL, PROVIDER_URL);
+            props.put(Context.SECURITY_PRINCIPAL, DEFAULT_USERNAME);
+            props.put(Context.SECURITY_CREDENTIALS, DEFAULT_PASSWORD);
+            context = new InitialContext(props);
 
-        /**
-         * Please note that the credentials passed in here have no effect on the
-         * messaging system as we have disabled the security on the HornetQ
-         * messaging subsystem
-         */
-        props.put(Context.SECURITY_PRINCIPAL, DEFAULT_USERNAME);
-        props.put(Context.SECURITY_CREDENTIALS, DEFAULT_PASSWORD);
 
-        InitialContext ic = new InitialContext(props);
+            ConnectionFactory remoteQueueCF = (ConnectionFactory) context.lookup(DEFAULT_CONNECTION_FACTORY);
+            remoteQueue = (Queue) context.lookup(DEFAULT_DESTINATION);
+            connection = remoteQueueCF.createConnection(DEFAULT_USERNAME, DEFAULT_PASSWORD);
+            connection.start();
+            remoteQueueSession = connection.createSession(true, Session.AUTO_ACKNOWLEDGE);
 
-        /**
-         * The following two lookups are based on how you configured the
-         * RemoteConnectionFactory and the local queue on Server 1. If you have
-         * followed the installation that was provided as-is then you can go
-         * with the below code
-         */
-        ConnectionFactory remoteQueueCF = (ConnectionFactory) ic.lookup(DEFAULT_CONNECTION_FACTORY);
-        remoteQueue = (Queue) ic.lookup(DEFAULT_DESTINATION);
-
-        remoteQueueConnection = remoteQueueCF.createConnection(DEFAULT_USERNAME, DEFAULT_PASSWORD);
-        remoteQueueConnection.start();
-        remoteQueueSession = remoteQueueConnection.createSession(false,Session.AUTO_ACKNOWLEDGE);
+        } catch (Exception e) {
+            log.severe(e.getMessage());
+            throw e;
+        }
     }
 
-    public String receiveTextMessage() throws JMSException {
+    public Message receiveTextMessage() throws JMSException {
         MessageConsumer msgConsumer = remoteQueueSession.createConsumer(this.remoteQueue);
-        TextMessage txtMsg = (TextMessage) msgConsumer.receive();
-        msgConsumer.close();
-        return txtMsg.getText();
+        return msgConsumer.receive();
+    }
+
+
+    @Override
+    public void onMessage(Message inMessage) {
+        TextMessage msg = null;
+
+        try {
+            if (inMessage instanceof TextMessage) {
+                msg = (TextMessage) inMessage;
+                log.info("MESSAGE BEAN: Message received: " + msg.getText());
+                msg.acknowledge();
+            } else {
+                log.warning("Message of wrong type: " + inMessage.getClass().getName());
+            }
+        } catch (Throwable te) {
+            te.printStackTrace();
+        }
     }
 
     @Override
     protected void finalize() throws Throwable {
-        remoteQueueSession.close();
-        remoteQueueConnection.close();
+
+        if (context != null) {
+            context.close();
+        }
+        /**
+         * closing the connection takes care of the session, producer, and consumer
+         */
+        if (connection != null) {
+            connection.close();
+        }
+        System.out.println("All closed!");
     }
 
-    @Override
-    public void onMessage(Message message) {
 
-    }
 }
