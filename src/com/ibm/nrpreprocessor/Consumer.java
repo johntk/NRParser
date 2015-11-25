@@ -12,7 +12,6 @@ import javax.naming.*;
 
 public class Consumer implements MessageListener, ExceptionListener {
 
-
     /** Set up all the default values
      *  Possibly put these into a properties file when refining */
     private static final Logger log = Logger.getLogger(Consumer.class.getName());
@@ -25,12 +24,10 @@ public class Consumer implements MessageListener, ExceptionListener {
     private Connection connection = null;
     private Context context;
 
-
     protected void Consume(Consumer asyncReceiver) throws Throwable {
 
         try {
-
-            /** get the initial context */
+            /** Get the initial context */
             final Properties props = new Properties();
             props.put(Context.INITIAL_CONTEXT_FACTORY, INITIAL_CONTEXT_FACTORY);
             props.put(Context.PROVIDER_URL, PROVIDER_URL);

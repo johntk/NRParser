@@ -5,7 +5,7 @@ package com.ibm.nrpreprocessor;
  */
 public class PreProcessor {
 
-    public static void main(String agrs[]) throws Throwable {
+    public static void main(String args[]) throws Throwable {
         Consumer remoteQInteractor = new Consumer();
         remoteQInteractor.Consume(remoteQInteractor);
         remoteQInteractor.finalize();
