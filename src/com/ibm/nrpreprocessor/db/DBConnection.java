@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class DBConnection {
@@ -51,6 +53,24 @@ public class DBConnection {
                                 entry.getUUID(), entry.getRetrieved(),
                                 entry.getPeriodEnd(), entry.getEnvironment(),
                                 entry.getName(), entry.getThroughput()));
+    }
+
+    public List<ThroughputEntry> getThroughputEntries(String env, String app) throws Exception {
+        List<ThroughputEntry> entries = new ArrayList<ThroughputEntry>();
+
+        Connection connection = getConnection();
+        Statement statement = connection.createStatement();
+
+        if (statement.execute("SELECT * FROM " + table + " WHERE ENVIRONMENT = '" + env + "'" +
+                " AND APPNAME = '" + app + "'")) {
+            while (statement.getResultSet().next()) {
+                entries.add(new ThroughputEntry(statement.getResultSet()));
+            }
+        } else {
+            return null;
+        }
+
+        return entries;
     }
 
 }

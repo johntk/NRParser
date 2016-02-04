@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/NewRelicPP.iml" filepath="$PROJECT_DIR$/NewRelicPP.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NewRelicParser.iml" filepath="$PROJECT_DIR$/NewRelicParser.iml" />
     </modules>
   </component>
 </project>

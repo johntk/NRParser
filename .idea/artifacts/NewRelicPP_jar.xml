@@ -2,7 +2,7 @@
   <artifact type="jar" name="NewRelicPP:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/NewRelicPP_jar</output-path>
     <root id="archive" name="NewRelicPP.jar">
-      <element id="module-output" name="NewRelicPP" />
+      <element id="module-output" name="NewRelicParser" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/jackson-annotations.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/jackson-core.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/java-json.jar" path-in-jar="/" />

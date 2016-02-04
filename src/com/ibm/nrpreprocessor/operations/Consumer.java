@@ -72,7 +72,7 @@ public class Consumer implements MessageListener, ExceptionListener {
 
              /** Wait for messages */
             System.out.println("waiting for messages");
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 500; i++) {
                 Thread.sleep(1000);
                 System.out.print(".");
             }
@@ -91,20 +91,6 @@ public class Consumer implements MessageListener, ExceptionListener {
 //            System.out.println("received: " + msg.getText());
             Parser parser = new Parser();
             parser.parseApplication(msg.getText());
-        } catch (JMSException ex) {
-            ex.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
