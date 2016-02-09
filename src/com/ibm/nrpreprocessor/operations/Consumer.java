@@ -72,7 +72,7 @@ public class Consumer implements MessageListener, ExceptionListener {
 
              /** Wait for messages */
             System.out.println("waiting for messages");
-            for (int i = 0; i < 500; i++) {
+            for (int i = 0; i < 47483647; i++) {
                 Thread.sleep(1000);
                 System.out.print(".");
             }
