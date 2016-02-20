@@ -4,25 +4,23 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class DBConnection {
 
     private final String table;
-    private static final String user = "CLOUD";
-    private static final String password = "Dormant-2000";
+    private static final String user = "johntk";
+    private static final String password = "IBMdb2";
     private static final String DB2url = "jdbc:db2://localhost:50000/NEWRELIC";
+    private static Connection conn = null;
 
-
-    /** Set the table name for applications */
+    /*** Set the table name for applications*/
     public static DBConnection createApplication() {
         return new DBConnection("APPLICATIONDATA");
     }
 
     public DBConnection(String table) {
-        this.table =  String.format("NRDATA.%s", table);
+        this.table = String.format("NRDATA.%s", table);
     }
 
     public Connection getConnection() throws IllegalAccessException,
@@ -33,44 +31,33 @@ public class DBConnection {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
         System.out.println("Connecting to database...");
-        Connection  connection = DriverManager.getConnection(DB2url, user, password);
-        System.out.println( "From DAO, connection obtained " );
-        return connection;
+        conn = DriverManager.getConnection(DB2url, user, password);
+        System.out.println("Database Connection Initialized.");
+        return conn;
     }
 
-
-    public boolean addHistory(ThroughputEntry entry) throws Exception {
-        Connection connection = getConnection();
-        Statement statement = connection.createStatement();
-
-        return 0 < statement
-                .executeUpdate(String
-                        .format("INSERT INTO " + table
-                                        + "(ID, RETRIEVED, PERIOD_END, ENVIRONMENT, APPNAME, THROUGHPUT)"
-                                        + "VALUES ('%s', '%s', '%s', '%s', '%s', %s)",
-                                entry.getUUID(), entry.getRetrieved(),
-                                entry.getPeriodEnd(), entry.getEnvironment(),
-                                entry.getName(), entry.getThroughput()));
-    }
-
-    public List<ThroughputEntry> getThroughputEntries(String env, String app) throws Exception {
-        List<ThroughputEntry> entries = new ArrayList<ThroughputEntry>();
-
-        Connection connection = getConnection();
-        Statement statement = connection.createStatement();
-
-        if (statement.execute("SELECT * FROM " + table + " WHERE ENVIRONMENT = '" + env + "'" +
-                " AND APPNAME = '" + app + "'")) {
-            while (statement.getResultSet().next()) {
-                entries.add(new ThroughputEntry(statement.getResultSet()));
-            }
-        } else {
-            return null;
+    public void closeConnection() {
+        if (conn == null) return;
+        try {
+            conn.close();
+            conn = null;
+        } catch(SQLException ex) {
+            ex.printStackTrace();
         }
-
-        return entries;
     }
 
+    public void addHistory(ThroughputEntry entry) throws Exception {
+
+        try (Statement statement = conn.createStatement()) {
+            statement
+                    .executeUpdate(String
+                            .format("INSERT INTO " + table
+                                            + "(ID, RETRIEVED, PERIOD_END, ENVIRONMENT, APPNAME, THROUGHPUT)"
+                                            + "VALUES ('%s', '%s', '%s', '%s', '%s', %s)",
+                                    entry.getUUID(), entry.getRetrieved(),
+                                    entry.getPeriodEnd(), entry.getEnvironment(),
+                                    entry.getName(), entry.getThroughput()));
+        }
+    }
 }

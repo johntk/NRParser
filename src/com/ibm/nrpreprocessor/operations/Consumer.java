@@ -1,25 +1,40 @@
 package com.ibm.nrpreprocessor.operations;
 
-import org.json.JSONException;
-
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.jms.*;
+
 import javax.naming.*;
 
-/** This class consumes the New Relic Response data in the hornetQ on  the Wildfly AS */
+/**
+ * This class consumes the New Relic Response data in the hornetQ on  the Wildfly AS
+ */
 public class Consumer implements MessageListener, ExceptionListener {
 
     private static final Logger log = Logger.getLogger(Consumer.class.getName());
-    private Connection connection = null;
+    private javax.jms.Connection connection = null;
     private Context context;
+    private int count;
+    private ArrayList<String> responseList;
+    private boolean push;
+//    private Parser parser;
+//    private Session queueSession;
+//    private MessageConsumer msgConsumer;
 
-    /** This is a hack to access properties files when debugging*/
+    public Consumer() {
+        this.count = 0;
+        this.responseList = new ArrayList<>();
+        this.push = false;
+    }
+
+    /**
+     * This is a hack to access properties files when debugging
+     */
     protected boolean debug = true;
 
     public void Consume(Consumer asyncReceiver) throws Throwable {
@@ -28,12 +43,13 @@ public class Consumer implements MessageListener, ExceptionListener {
             /** Get the initial context */
             final Properties props = new Properties();
             /** If debugging in IDE the properties are acceded this way */
-            if(debug){
-                InputStream f = getClass().getClassLoader().getResourceAsStream("consumer.properties");
-                props.load(f);
+            if (debug) {
+                try (InputStream f = getClass().getClassLoader().getResourceAsStream("consumer.properties")) {
+                    props.load(f);
+                }
             }
             /** If running the .jar artifact the properties are acceded this way*/
-            else{
+            else {
                 File jarPath = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
                 String propertiesPath = jarPath.getParentFile().getAbsolutePath();
                 props.load(new FileInputStream(propertiesPath + File.separator + "consumer.properties"));
@@ -52,45 +68,71 @@ public class Consumer implements MessageListener, ExceptionListener {
             /** Lookup the queue connection factory */
             ConnectionFactory connFactory = (ConnectionFactory) context.lookup(props.getProperty("DEFAULT_CONNECTION_FACTORY"));
 
-             /** Create a queue connection */
-            connection = connFactory.createConnection(props.getProperty("DEFAULT_USERNAME"), props.getProperty("DEFAULT_PASSWORD"));
+            /** Create a queue connection */
+            try (javax.jms.Connection connection = connFactory.createConnection(props.getProperty("DEFAULT_USERNAME"), props.getProperty("DEFAULT_PASSWORD"));
 
-             /** Create a queue session */
-            Session queueSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                 /** Create a queue session */
+                 Session queueSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-             /** Create a queue consumer */
-            MessageConsumer msgConsumer = queueSession.createConsumer(queue);
+                 /** Create a queue consumer */
+                 MessageConsumer msgConsumer = queueSession.createConsumer(queue)) {
 
-             /** Set an asynchronous message listener */
-            msgConsumer.setMessageListener(asyncReceiver);
 
-             /** Set an asynchronous exception listener on the connection */
-            connection.setExceptionListener(asyncReceiver);
+                /** Set an asynchronous message listener */
+                msgConsumer.setMessageListener(asyncReceiver);
 
-            /** Start connection */
-            connection.start();
+                /** Set an asynchronous exception listener on the connection */
+                connection.setExceptionListener(asyncReceiver);
 
-             /** Wait for messages */
-            System.out.println("waiting for messages");
-            for (int i = 0; i < 47483647; i++) {
-                Thread.sleep(1000);
-                System.out.print(".");
+                /** Start connection */
+                connection.start();
+
+                /** Wait for messages */
+            // This is a bad way of doing this Change this to a less error prone solution
+                System.out.println("waiting for messages");
+                int bufferCount = 0;
+                for (int i = 0; i < 47483647; i++) {
+                    Thread.sleep(1000);
+                    System.out.print(".");
+                    if (bufferCount == 15) {
+                        if(responseList.size() > 1){
+                            ArrayList<String> parserList = new ArrayList<String>(responseList);
+                            // Risk of clearing a result not passed to the copy List, fix this
+                            responseList.clear();
+                            this.buffer(parserList);
+                        }
+                        bufferCount = 0;
+                    }
+                    bufferCount++;
+                }
+                System.out.println();
             }
-            System.out.println();
 
         } catch (Exception e) {
             log.severe(e.getMessage());
             throw e;
+        } finally {
+            if (context != null) {
+                context.close();
+            }
         }
+        if (connection != null) {
+            connection.close();
+        }
+    }
+
+    public void buffer( ArrayList<String> list) throws Exception {
+            System.out.println("Parsing: " + list.size() + " messages");
+            Parser parser = new Parser();
+            parser.addList(list);
+            parser.parseApplication();
     }
 
     @Override
     public void onMessage(Message message) {
         TextMessage msg = (TextMessage) message;
         try {
-//            System.out.println("received: " + msg.getText());
-            Parser parser = new Parser();
-            parser.parseApplication(msg.getText());
+            responseList.add(msg.getText());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -111,8 +153,7 @@ public class Consumer implements MessageListener, ExceptionListener {
             if (connection != null) {
                 connection.close();
             }
-        }
-        finally {
+        } finally {
             super.finalize();
         }
     }
