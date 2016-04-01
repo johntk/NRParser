@@ -11,7 +11,7 @@ public class DBConnection {
     private final String table;
     private static final String user = "johntk";
     private static final String password = "IBMdb2";
-    private static final String DB2url = "jdbc:db2://localhost:50000/NEWRELIC";
+    private static final String DB2url = "jdbc:db2://johnkiernan.ie:50000/NEWRELIC";
     private static Connection conn = null;
 
     /*** Set the table name for applications*/

@@ -29,7 +29,7 @@ public final class TimestampUtils {
     private TimestampUtils() { }
 
     /**  Formats the string for a the New Relic request I don't think this is necessary anymore and may remove it */
-    private static final DateTimeFormatter FORMAT_TIMESTAMP = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZZ");
+    private static final DateTimeFormatter FORMAT_TIMESTAMP = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public static String format(Instant timestamp) {
         return FORMAT_TIMESTAMP.print(timestamp);

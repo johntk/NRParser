@@ -22,8 +22,6 @@ public class HistoryEntry {
 
     public HistoryEntry() {
         this.setUUID((UUID) null);
-//        this.setRetrieved(null);
-//        this.setPeriodEnd(null);
         this.setEnvironment(null);
         this.setName(null);
     }
@@ -76,24 +74,8 @@ public class HistoryEntry {
         }
     }
 
-//    public final void setRetrieved(Timestamp retrieved) {
-//        this.retrieved = retrieved;
-//
-//        if (this.retrieved == null) {
-//            this.retrieved = createNullTimestamp();
-//        }
-//    }
-//
-//    public final void setPeriodEnd(Timestamp periodEnd) {
-//        this.periodEnd = periodEnd;
-//
-//        if (this.periodEnd == null) {
-//            this.periodEnd = createNullTimestamp();
-//        }
-//    }
 
     public final void setRetrieved(Instant retrieved) {
-        System.out.println(retrieved.toString());
         this.retrieved = new Timestamp(retrieved.getMillis());
 
         if (this.retrieved == null) {

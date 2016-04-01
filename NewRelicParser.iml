@@ -8,12 +8,16 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="jboss-client" level="project" />
-    <orderEntry type="library" name="jackson-annotations" level="project" />
-    <orderEntry type="library" name="jackson-databind" level="project" />
-    <orderEntry type="library" name="jackson-core" level="project" />
-    <orderEntry type="library" name="java-json" level="project" />
-    <orderEntry type="library" name="joda-time-2.9" level="project" />
-    <orderEntry type="library" name="jfreechart-1.0.1" level="project" />
+    <orderEntry type="library" exported="" name="jackson-annotations" level="project" />
+    <orderEntry type="library" exported="" name="jackson-databind" level="project" />
+    <orderEntry type="library" exported="" name="jackson-core" level="project" />
+    <orderEntry type="library" exported="" name="java-json" level="project" />
+    <orderEntry type="library" exported="" name="joda-time-2.9" level="project" />
+    <orderEntry type="library" exported="" name="jfreechart-1.0.1" level="project" />
+    <orderEntry type="library" exported="" name="jboss-client" level="project" />
+    <orderEntry type="library" exported="" name="slf4j-simple-1.7.17" level="project" />
+    <orderEntry type="library" exported="" name="perfutils" level="project" />
+    <orderEntry type="library" exported="" name="db2jcc" level="project" />
+    <orderEntry type="library" exported="" name="db2jcc4" level="project" />
   </component>
 </module>

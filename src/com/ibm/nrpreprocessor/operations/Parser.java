@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.nrpreprocessor.db.DBConnection;
 import com.ibm.nrpreprocessor.db.ThroughputEntry;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.joda.time.Instant;
@@ -62,8 +63,8 @@ public class Parser {
                     for (int i = 0; i < timeslices.length(); i++) {
                         JSONObject array2 = timeslices.getJSONObject(i);
                         JSONObject values = array2.getJSONObject("values");
-                        Instant from = TimestampUtils.parseTimestamp(array2.get("from").toString(), null);
-                        Instant to = TimestampUtils.parseTimestamp(array2.get("to").toString(), null);
+                        Instant from = new Instant(array2.get("from").toString());
+                        Instant to = new Instant(array2.get("to").toString());
                         Iterator<String> nameItr = values.keys();
                         while (nameItr.hasNext()) {
                             String name = nameItr.next();
@@ -72,7 +73,7 @@ public class Parser {
                                             "\nApp name: " + appName +
                                             "\nApp ID: " + appID +
                                             "\nRequest per minute: " + values.getDouble(name) +
-                                            "\nFrom: " + from + " To: " + to);
+                                            "\nFrom: " + from.toDateTime().toLocalDateTime() + " To: " + to.toDateTime().toLocalDateTime());
 
                             ThroughputEntry TP = new ThroughputEntry();
                             TP.setThroughput(values.getDouble(name));
@@ -85,6 +86,9 @@ public class Parser {
                     }
                 }
             }
+        }
+        catch(Exception e){
+            System.out.println(e);
         }
     }
 }

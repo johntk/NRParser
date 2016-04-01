@@ -8,6 +8,15 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/java-json.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/jackson-databind.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/jboss-client.jar" path-in-jar="/" />
+      <element id="library" level="project" name="slf4j-simple-1.7.17" />
+      <element id="library" level="project" name="db2jcc4" />
+      <element id="artifact" artifact-name="db2jcc" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/db2jcc.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/db2jcc4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/slf4j-simple-1.7.17.jar" path-in-jar="/" />
+      <element id="library" level="project" name="joda-time-2.9" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/joda-time-2.9.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/perfutils.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
