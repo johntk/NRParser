@@ -24,20 +24,24 @@ import java.util.Map;
 public class Parser {
 
     private ArrayList<String> responseList;
-
+    private DBConnection db = DBConnection.createApplication();
     public void addList(ArrayList<String> list) {
         this.responseList = list;
     }
 
-    public void parseApplication() throws Exception {
+    public void pushToDB(ThroughputEntry TP) throws Exception {
 
-        DBConnection db = DBConnection.createApplication();
+        db.addHistory(TP);
+
+    }
+    public ThroughputEntry parseApplication() throws Exception {
+
+        ThroughputEntry TP = new ThroughputEntry();
 
         try (Connection connection = db.getConnection()) {
             JsonFactory factory = new JsonFactory();
             ObjectMapper mapper = new ObjectMapper(factory);
 
-//            System.out.println("Parser check" + responseList.size());
             ArrayList<String> parserList = new ArrayList<String>(responseList);
             Iterator<String> iter = parserList.iterator();
             while(iter.hasNext()) {
@@ -75,13 +79,12 @@ public class Parser {
                                             "\nRequest per minute: " + values.getDouble(name) +
                                             "\nFrom: " + from.toDateTime().toLocalDateTime() + " To: " + to.toDateTime().toLocalDateTime());
 
-                            ThroughputEntry TP = new ThroughputEntry();
+
                             TP.setThroughput(values.getDouble(name));
                             TP.setEnvironment(envName);
                             TP.setName(appName);
                             TP.setRetrieved(from);
                             TP.setPeriodEnd(to);
-                            db.addHistory(TP);
                         }
                     }
                 }
@@ -90,5 +93,6 @@ public class Parser {
         catch(Exception e){
             System.out.println(e);
         }
+        return TP;
     }
 }

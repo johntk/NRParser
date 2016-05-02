@@ -57,7 +57,7 @@ public final class TimestampUtils {
         return defaultValue;
     }
 
-    /**  These 2 methods are from old code, not sure of purpose yet, mey remove*/
+    /**  These 2 methods are from old code, mey remove*/
     public static Instant earliestPeriod(Timestamp timestamp, int granularity) {
         return new Instant(MathUtils.modulusFloor(timestamp.getTime(), MILLIS_PER_MINUTE * granularity));
     }

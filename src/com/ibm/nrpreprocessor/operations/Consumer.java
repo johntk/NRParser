@@ -71,11 +71,13 @@ public class Consumer implements MessageListener, ExceptionListener {
             try (javax.jms.Connection connection = connFactory.createConnection(props.getProperty("DEFAULT_USERNAME"), props.getProperty("DEFAULT_PASSWORD"));
 
 
-                 /** Create a queue session */
+
+                         /** Create a queue session */
                  Session queueSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
                  /** Create a queue consumer */
                  MessageConsumer msgConsumer = queueSession.createConsumer(queue)) {
+
 
                 /** Set an asynchronous message listener */
                 msgConsumer.setMessageListener(asyncReceiver);
@@ -99,7 +101,7 @@ public class Consumer implements MessageListener, ExceptionListener {
 
                         long push = Duration.between(responseTime, bufferCheck).getSeconds();
                         System.out.println();
-                        System.out.println("Seconds till push " + (60 - push));
+                        System.out.println("Seconds till publish " + (60 - push));
                         if (push > 60) {
                             responseListCopy = new ArrayList<>(responseList);
                             responseList.clear();
@@ -107,7 +109,14 @@ public class Consumer implements MessageListener, ExceptionListener {
                             responseListCopy.clear();
                         }
                     }
-
+                    connection.setExceptionListener(exception -> {
+                        log.severe("ExceptionListener triggered: " + exception.getMessage());
+                        try {
+                            restartJSMConnection();
+                        } catch (Throwable throwable) {
+                            throwable.printStackTrace();
+                        }
+                    });
                 }
             }
 
@@ -127,9 +136,19 @@ public class Consumer implements MessageListener, ExceptionListener {
 
     public void buffer(ArrayList<String> list) throws Exception {
         System.out.println("Parsing: " + list.size() + " messages");
+        Thread.sleep(1000);
         Parser parser = new Parser();
         parser.addList(list);
-        parser.parseApplication();
+        parser.pushToDB(parser.parseApplication());
+    }
+
+    public void restartJSMConnection() throws Throwable {
+
+        try {
+            Consume(this);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
     @Override
