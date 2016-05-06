@@ -28,12 +28,15 @@ public class Parser {
     public void addList(ArrayList<String> list) {
         this.responseList = list;
     }
+    private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Parser.class.getName());
 
+    /** Adds the ThroughputEntry to the DB */
     public void pushToDB(ThroughputEntry TP) throws Exception {
 
         db.addHistory(TP);
-
     }
+
+    /** Parses the JSON message consumed by the consumer ready for DB insertion */
     public ThroughputEntry parseApplication() throws Exception {
 
         ThroughputEntry TP = new ThroughputEntry();
@@ -92,6 +95,7 @@ public class Parser {
         }
         catch(Exception e){
             System.out.println(e);
+            logger.fatal("Exception in parseApplication() ", e);
         }
         return TP;
     }

@@ -24,6 +24,7 @@ public class Consumer implements MessageListener, ExceptionListener {
     private ArrayList<String> responseListCopy;
     private Instant responseTime;
     private Instant bufferCheck;
+    private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Consumer.class.getName());
 
     public Consumer() throws Exception {
 
@@ -44,6 +45,9 @@ public class Consumer implements MessageListener, ExceptionListener {
             if (debug) {
                 try (InputStream f = getClass().getClassLoader().getResourceAsStream("consumer.properties")) {
                     props.load(f);
+                }catch(Exception e){
+                    e.printStackTrace();
+                    logger.fatal("Exception in Consume() getting properties file ", e);
                 }
             }
             /** If running the .jar artifact the properties are acceded this way*/
@@ -89,7 +93,7 @@ public class Consumer implements MessageListener, ExceptionListener {
                 connection.start();
 
                 /** Wait for messages */
-                // This is a bad way of doing this Change this to a less error prone solution
+                // This is a bad way of doing this Possible use a timer instead
                 System.out.println("waiting for messages");
                 while (true) {
 
@@ -109,12 +113,14 @@ public class Consumer implements MessageListener, ExceptionListener {
                             responseListCopy.clear();
                         }
                     }
+                    // Reconnect to broker if connection is lost
                     connection.setExceptionListener(exception -> {
                         log.severe("ExceptionListener triggered: " + exception.getMessage());
                         try {
                             restartJSMConnection();
                         } catch (Throwable throwable) {
                             throwable.printStackTrace();
+                            logger.fatal("Exception in Consume() Reconnecting to broker  ", throwable);
                         }
                     });
                 }
@@ -133,7 +139,7 @@ public class Consumer implements MessageListener, ExceptionListener {
         }
     }
 
-
+    /** Buffer inserts to the DB */
     public void buffer(ArrayList<String> list) throws Exception {
         System.out.println("Parsing: " + list.size() + " messages");
         Thread.sleep(1000);
@@ -148,6 +154,7 @@ public class Consumer implements MessageListener, ExceptionListener {
             Consume(this);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
+            logger.fatal("Exception in restartJSMConnection() Reconnecting to broker  ", throwable);
         }
     }
 
@@ -161,6 +168,7 @@ public class Consumer implements MessageListener, ExceptionListener {
 
         } catch (Exception e) {
             e.printStackTrace();
+            logger.fatal("Exception in onMessage() adding message to list  ", e);
         }
     }
 

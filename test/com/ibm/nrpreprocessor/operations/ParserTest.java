@@ -1,5 +1,6 @@
 package com.ibm.nrpreprocessor.operations;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.ibm.nrpreprocessor.db.ThroughputEntry;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,10 +8,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertNotEquals;
 
 public class ParserTest {
-
 
     private String json;
     private Parser paserTest;
@@ -46,9 +45,20 @@ public class ParserTest {
     }
 
     @Test
-    public void DBConnectionTest() {
+    public void ParseApplicationTestFail(){
+        testList.clear();
 
+        json = "{\"G3\":[\"docs\",\"2707889\",{\"metric_data\":{\"metrics_not_found\":[],\"metrics_found\":[\"HttpDispatcher\"]," +
+                "\"from\":\"2016-05-01T20:32:24+00:00\",\"to\":\"2016-05-01T20:36:25+00:00\",\"metrics\":[{\"timeslices\":[{\"values\":{\"requests_per_minute\":13}," +
+                "\"from\":\"2016-05-01T19:34:00+00:00\",\"to\":\"2016-05-01T19:35:00+00:00\"}],\"name\":\"HttpDispatcher\"}]}}}";
 
-
+        testList.add(json);
+        paserTest.addList(testList);
+        try {
+            TP = paserTest.parseApplication();
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertEquals(e, JsonParseException.class);
+        }
     }
 }

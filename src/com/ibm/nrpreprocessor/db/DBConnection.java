@@ -1,5 +1,7 @@
 package com.ibm.nrpreprocessor.db;
 
+import org.apache.log4j.Logger;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -13,6 +15,7 @@ public class DBConnection {
     private static final String password = "IBMdb2";
     private static final String DB2url = "jdbc:db2://johnkiernan.ie:50000/NEWRELIC";
     private static Connection conn = null;
+    private static Logger logger = Logger.getLogger(DBConnection.class.getName());
 
     /*** Set the table name for applications*/
     public static DBConnection createApplication() {
@@ -30,6 +33,7 @@ public class DBConnection {
             Class.forName("COM.ibm.db2os390.sqlj.jdbc.DB2SQLJDriver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
+            logger.fatal("Exception in getConnection() ", e);
         }
         System.out.println("Connecting to database...");
         conn = DriverManager.getConnection(DB2url, user, password);
@@ -44,6 +48,7 @@ public class DBConnection {
             conn = null;
         } catch(SQLException ex) {
             ex.printStackTrace();
+            logger.fatal("Exception in closeConnection", ex);
         }
     }
 
@@ -58,6 +63,9 @@ public class DBConnection {
                                     entry.getUUID(), entry.getRetrieved(),
                                     entry.getPeriodEnd(), entry.getEnvironment(),
                                     entry.getName(), entry.getThroughput()));
+        }catch(Exception e){
+            e.printStackTrace();
+            logger.fatal("Exception in addHistory()", e);
         }
     }
 }
